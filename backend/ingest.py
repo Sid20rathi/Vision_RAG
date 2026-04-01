@@ -23,9 +23,9 @@ IMAGE_DIR   = Path("extracted_images")
 UPLOAD_DIR.mkdir(exist_ok=True)
 IMAGE_DIR.mkdir(exist_ok=True)
 
-
-CHUNK_SIZE    = 500   
-CHUNK_OVERLAP = 50    
+# Chunking config
+CHUNK_SIZE    = 500   # characters per chunk
+CHUNK_OVERLAP = 50    # overlap between consecutive chunks
 
 
 # ── Qdrant helpers ────────────────────────────────────────────
@@ -163,3 +163,76 @@ def upsert_text_chunks(client: QdrantClient, chunks: list[dict]):
 
 def upsert_image_records(client: QdrantClient, records: list[dict]):
     """Embed image descriptions and upsert into varag_images."""
+    if not records:
+        return
+
+    points = []
+    for rec in records:
+        vector = embed(rec["description"])
+        points.append(
+            PointStruct(
+                id=str(uuid.uuid4()),
+                vector=vector,
+                payload={
+                    "description": rec["description"],
+                    "image_path":  rec["image_path"],
+                    "source":      rec["source"],
+                    "page":        rec["page"],
+                    "type":        "image",
+                },
+            )
+        )
+
+    client.upsert(collection_name=IMAGE_COLLECTION, points=points)
+    print(f"  ✅ Upserted {len(points)} image records")
+
+
+# ── Main pipeline ─────────────────────────────────────────────
+
+def ingest_pdf(file_path: str, source_name: str) -> dict:
+    """
+    Full ingestion pipeline:
+    1. Open PDF with PyMuPDF
+    2. Per page: extract text → chunk → embed → upsert
+    3. Per page: extract images → LLaVA describe → embed → upsert
+    4. Return a summary dict
+    """
+    print(f"\n📄 Ingesting: {source_name}")
+    client = get_qdrant()
+    doc    = fitz.open(file_path)
+
+    all_text_chunks  = []
+    all_image_records = []
+
+    for page_num in range(len(doc)):
+        page = doc[page_num]
+        print(f"  📃 Page {page_num + 1}/{len(doc)}")
+
+        # ── Text ──
+        raw_text = page.get_text()
+        chunks   = chunk_text(raw_text, source=source_name, page=page_num + 1)
+        all_text_chunks.extend(chunks)
+
+        # ── Images ──
+        img_records = extract_images_from_page(
+            doc, page, page_num=page_num + 1, source=source_name
+        )
+        all_image_records.extend(img_records)
+
+    doc.close()
+
+    # Batch upsert everything
+    print("\n📦 Upserting to Qdrant...")
+    upsert_text_chunks(client, all_text_chunks)
+    upsert_image_records(client, all_image_records)
+
+    summary = {
+        "source":      source_name,
+        "pages":       len(doc),
+        "text_chunks": len(all_text_chunks),
+        "images":      len(all_image_records),
+        "status":      "success",
+    }
+
+    print(f"\n✅ Done: {summary}")
+    return summary
