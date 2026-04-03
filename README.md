@@ -2,7 +2,7 @@
 
 VARAG is a cutting-edge **Multimodal RAG** (Retrieval-Augmented Generation) system designed to interact with complex PDF documents. Unlike traditional RAG, VARAG understands both textual content and visual elements (charts, tables, diagrams) by leveraging Vision LLMs to describe visual context before indexing.
 
-![VARAG Dashboard](https://raw.githubusercontent.com/Sid20rathi/Vision_RAG/main/frontend/public/screenshot.png) *(Placeholder for your actual screenshot)*
+![VARAG Dashboard](./frontend/public/Dashboard.png)
 
 ## 🚀 Key Features
 
