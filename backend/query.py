@@ -18,12 +18,13 @@ MIN_SCORE   = 0.3 # discard results below this cosine similarity
 
 def retrieve_text(client: QdrantClient, query_vector: list[float]) -> list[dict]:
     """Search varag_text, return top-k hits above MIN_SCORE."""
-    hits = client.search(
-        collection_name=TEXT_COLLECTION,
-        query_vector=query_vector,
-        limit=TEXT_TOP_K,
-        score_threshold=MIN_SCORE,
-    )
+    result = client.query_points(
+    collection_name=TEXT_COLLECTION,
+    query=query_vector,
+    limit=TEXT_TOP_K,
+    score_threshold=MIN_SCORE,
+)
+    
     return [
         {
             "content": h.payload["text"],
@@ -32,15 +33,15 @@ def retrieve_text(client: QdrantClient, query_vector: list[float]) -> list[dict]
             "score":   round(h.score, 3),
             "type":    "text",
         }
-        for h in hits
+        for h in result.points
     ]
 
 
 def retrieve_images(client: QdrantClient, query_vector: list[float]) -> list[dict]:
     """Search varag_images, return top-k hits above MIN_SCORE."""
-    hits = client.search(
+    result = client.query_points(
         collection_name=IMAGE_COLLECTION,
-        query_vector=query_vector,
+        query=query_vector,
         limit=IMAGE_TOP_K,
         score_threshold=MIN_SCORE,
     )
@@ -53,7 +54,7 @@ def retrieve_images(client: QdrantClient, query_vector: list[float]) -> list[dic
             "score":      round(h.score, 3),
             "type":       "image",
         }
-        for h in hits
+        for h in result.points
     ]
 
 

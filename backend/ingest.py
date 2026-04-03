@@ -218,6 +218,7 @@ def ingest_pdf(file_path: str, source_name: str) -> dict:
             doc, page, page_num=page_num + 1, source=source_name
         )
         all_image_records.extend(img_records)
+    num_pages = len(doc)
 
     doc.close()
 
@@ -228,7 +229,7 @@ def ingest_pdf(file_path: str, source_name: str) -> dict:
 
     summary = {
         "source":      source_name,
-        "pages":       len(doc),
+        "pages":       num_pages,
         "text_chunks": len(all_text_chunks),
         "images":      len(all_image_records),
         "status":      "success",

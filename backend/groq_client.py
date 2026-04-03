@@ -8,7 +8,7 @@ load_dotenv()
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-VISION_MODEL    = "llava-v1.5-7b-4096-preview"
+VISION_MODEL    = "meta-llama/llama-4-scout-17b-16e-instruct"
 GENERATION_MODEL = "llama-3.3-70b-versatile"
 
 
