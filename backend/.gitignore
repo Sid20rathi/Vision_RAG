@@ -1,2 +1,7 @@
 venv
 .env
+extracted_images/
+extracted_images
+uploads/
+uploads
+
