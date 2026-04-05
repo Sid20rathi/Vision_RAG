@@ -62,7 +62,7 @@ export function ChatPanel({
   };
 
   return (
-    <main className="flex-1 h-full flex flex-col bg-background relative overflow-hidden">
+    <main className="flex-1 min-w-0 h-full flex flex-col bg-background relative overflow-hidden">
       <div className="h-16 border-b border-border flex items-center px-8 bg-background/50 backdrop-blur-md z-10 sticky top-0">
         <h2 className="text-sm font-bold uppercase tracking-widest text-foreground flex items-center gap-2">
           <MessageSquare size={16} className="text-varag-purple" />
@@ -70,7 +70,7 @@ export function ChatPanel({
         </h2>
       </div>
 
-      <ScrollArea className="flex-1 px-8 py-6" ref={scrollRef}>
+      <ScrollArea className="flex-1 px-8 py-6 min-h-0" ref={scrollRef}>
         <div className="max-w-3xl mx-auto space-y-2">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8">

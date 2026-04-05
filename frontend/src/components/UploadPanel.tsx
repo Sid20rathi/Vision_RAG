@@ -170,7 +170,7 @@ export function UploadPanel({
         <Separator className="flex-1" />
       </div>
 
-      <ScrollArea className="flex-1 px-5 py-3">
+      <ScrollArea className="flex-1 px-5 py-3 min-h-0">
         {ingestedDocs.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-32 text-center">
             <p className="text-xs text-muted-foreground/60 leading-relaxed max-w-[160px]">

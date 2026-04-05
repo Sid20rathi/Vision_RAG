@@ -32,7 +32,7 @@ export function SourcesPanel({ sources, activeMessageId }: SourcesPanelProps) {
         </p>
       </div>
 
-      <ScrollArea className="flex-1 px-4 py-4">
+      <ScrollArea className="flex-1 px-4 py-4 min-h-0">
         <AnimatePresence mode="popLayout">
           {sources.length === 0 ? (
             <motion.div 
