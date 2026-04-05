@@ -35,7 +35,7 @@ async def startup():
     """Create Qdrant collections on first boot."""
     client = get_qdrant()
     ensure_collections(client)
-    print("✅ Qdrant collections ready")
+    print("Qdrant collections ready")
 
 
 # ── Health check ──────────────────────────────────────────────

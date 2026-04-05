@@ -149,7 +149,7 @@ def query_varag(user_query: str) -> dict:
     4. Generate answer via Groq
     5. Return answer + formatted sources
     """
-    print(f"\n🔍 Query: {user_query}")
+    print(f"\nQuery: {user_query}")
 
     client       = get_qdrant()
     query_vector = embed(user_query)
@@ -158,8 +158,8 @@ def query_varag(user_query: str) -> dict:
     text_hits  = retrieve_text(client, query_vector)
     image_hits = retrieve_images(client, query_vector)
 
-    print(f"  📄 Text hits:  {len(text_hits)}")
-    print(f"  🖼  Image hits: {len(image_hits)}")
+    print(f"Text hits:  {len(text_hits)}")
+    print(f"Image hits: {len(image_hits)}")
 
     # Edge case — nothing retrieved at all
     if not text_hits and not image_hits:
@@ -174,7 +174,7 @@ def query_varag(user_query: str) -> dict:
     answer  = generate_answer(prompt)
     sources = format_sources(text_hits, image_hits)
 
-    print(f"  ✅ Answer generated ({len(answer)} chars)")
+    print(f"Answer generated ({len(answer)} chars)")
 
     return {
         "answer":  answer,

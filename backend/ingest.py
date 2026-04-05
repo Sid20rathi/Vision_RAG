@@ -23,12 +23,11 @@ IMAGE_DIR   = Path("extracted_images")
 UPLOAD_DIR.mkdir(exist_ok=True)
 IMAGE_DIR.mkdir(exist_ok=True)
 
-# Chunking config
+
 CHUNK_SIZE    = 500   # characters per chunk
 CHUNK_OVERLAP = 50    # overlap between consecutive chunks
 
 
-# ── Qdrant helpers ────────────────────────────────────────────
 
 def get_qdrant() -> QdrantClient:
     return QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
@@ -47,10 +46,9 @@ def ensure_collections(client: QdrantClient):
                     distance=Distance.COSINE
                 ),
             )
-            print(f"✅ Created collection: {name}")
+            print(f"Created collection: {name}")
 
 
-# ── Text helpers ──────────────────────────────────────────────
 
 def chunk_text(text: str, source: str, page: int) -> list[dict]:
     """
@@ -76,13 +74,13 @@ def chunk_text(text: str, source: str, page: int) -> list[dict]:
                 "type":   "text",
             })
 
-        # Move forward by (CHUNK_SIZE - CHUNK_OVERLAP) to create overlap
+     
         start += CHUNK_SIZE - CHUNK_OVERLAP
 
     return chunks
 
 
-# ── Image helpers ─────────────────────────────────────────────
+
 
 def extract_images_from_page(
     doc: fitz.Document,
@@ -104,22 +102,22 @@ def extract_images_from_page(
         except Exception:
             continue
 
-        # Skip tiny images — likely icons or decorations
+        
         if base_image["width"] < 80 or base_image["height"] < 80:
             continue
 
-        ext      = base_image["ext"]          # png, jpeg, etc.
+        ext      = base_image["ext"]         
         img_path = IMAGE_DIR / f"p{page_num}_i{img_index}.{ext}"
 
         with open(img_path, "wb") as f:
             f.write(base_image["image"])
 
-        # Describe with LLaVA — this is the key VARAG step
+
         try:
-            print(f"  🖼  Describing image: page {page_num}, image {img_index}")
+            print(f"Describing image: page {page_num}, image {img_index}")
             description = describe_image(str(img_path))
         except Exception as e:
-            print(f"  ⚠️  LLaVA failed for {img_path}: {e}")
+            print(f" LLaVA failed for {img_path}: {e}")
             description = f"Image on page {page_num} (description unavailable)"
 
         image_records.append({
@@ -133,7 +131,6 @@ def extract_images_from_page(
     return image_records
 
 
-# ── Qdrant upsert helpers ─────────────────────────────────────
 
 def upsert_text_chunks(client: QdrantClient, chunks: list[dict]):
     """Embed and upsert text chunks into varag_text."""
@@ -158,7 +155,7 @@ def upsert_text_chunks(client: QdrantClient, chunks: list[dict]):
     ]
 
     client.upsert(collection_name=TEXT_COLLECTION, points=points)
-    print(f"  ✅ Upserted {len(points)} text chunks")
+    print(f"Upserted {len(points)} text chunks")
 
 
 def upsert_image_records(client: QdrantClient, records: list[dict]):
@@ -184,7 +181,7 @@ def upsert_image_records(client: QdrantClient, records: list[dict]):
         )
 
     client.upsert(collection_name=IMAGE_COLLECTION, points=points)
-    print(f"  ✅ Upserted {len(points)} image records")
+    print(f"Upserted {len(points)} image records")
 
 
 # ── Main pipeline ─────────────────────────────────────────────
@@ -197,7 +194,7 @@ def ingest_pdf(file_path: str, source_name: str) -> dict:
     3. Per page: extract images → LLaVA describe → embed → upsert
     4. Return a summary dict
     """
-    print(f"\n📄 Ingesting: {source_name}")
+    print(f"\nIngesting: {source_name}")
     client = get_qdrant()
     doc    = fitz.open(file_path)
 
@@ -206,7 +203,7 @@ def ingest_pdf(file_path: str, source_name: str) -> dict:
 
     for page_num in range(len(doc)):
         page = doc[page_num]
-        print(f"  📃 Page {page_num + 1}/{len(doc)}")
+        print(f" Page {page_num + 1}/{len(doc)}")
 
         # ── Text ──
         raw_text = page.get_text()
@@ -223,7 +220,7 @@ def ingest_pdf(file_path: str, source_name: str) -> dict:
     doc.close()
 
     # Batch upsert everything
-    print("\n📦 Upserting to Qdrant...")
+    print("\nUpserting to Qdrant...")
     upsert_text_chunks(client, all_text_chunks)
     upsert_image_records(client, all_image_records)
 
@@ -235,5 +232,5 @@ def ingest_pdf(file_path: str, source_name: str) -> dict:
         "status":      "success",
     }
 
-    print(f"\n✅ Done: {summary}")
+    print(f"\nDone: {summary}")
     return summary
